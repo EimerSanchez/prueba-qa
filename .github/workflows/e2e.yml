@@ -1,0 +1,54 @@
+name: Playwright E2E & API Tests
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  test:
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create .env from template
+        run: cp .env.example .env
+
+      - name: Start application with Docker Compose
+        run: |
+          docker compose up -d --build
+          # Esperar a que el backend responda con status ok
+          timeout 60 bash -c 'until curl -s http://localhost:8080/health | grep -q "ok"; do sleep 2; done'
+          # Esperar a que el frontend responda HTTP 200
+          timeout 60 bash -c 'until curl -s -I http://localhost:3000 | grep -q "200 OK"; do sleep 2; done'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+          cache-dependency-path: e2e/package.json
+
+      - name: Install Playwright and dependencies
+        working-directory: e2e
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium firefox
+
+      - name: Run Playwright test suite
+        working-directory: e2e
+        run: npm test
+
+      - name: Upload Playwright Report & Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            e2e/playwright-report/
+            qa/evidencias/
+          retention-days: 14
