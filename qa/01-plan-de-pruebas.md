@@ -5,6 +5,7 @@
 - **Versión del Producto:** `v0.1.0-mvp`
 - **Fecha de Emisión:** 22 de Octubre de 2026
 - **Estándar:** Basado en ISO/IEC/IEEE 29119-3 e ISTQB Certified Tester Advanced Level
+- **Video de Sustentación:** [Ver en YouTube](https://youtu.be/mI1F2q-Ocp0)
 
 ---
 
